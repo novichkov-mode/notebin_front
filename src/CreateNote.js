@@ -12,13 +12,12 @@ import { useNavigate } from 'react-router-dom';
 class CreateNote extends React.Component {
     constructor(props) {
         super(props);
+        //todo
         this.state = {
             title: '',
             content: '',
-            settings: {
-                deleteType: 'default',
-                time: null,
-            },
+            expirationType: 'NEVER',
+            expirationPeriod: null,
         };
     }
 
@@ -31,28 +30,31 @@ class CreateNote extends React.Component {
     };
 
     handleSettingsChange = (event) => {
-        this.setState({ settings: event});
+        this.setState({ expirationType: event.value, expirationPeriod: event.time});
     };
 
     createNote = async () => {
-        const { title, content, settings } = this.state;
-        // console.log(this.state)
+        const { title, content, expirationType, expirationPeriod } = this.state;
+        console.log(this.state)
 
         try {
-            const response = await fetch('/api/create', {
+            const response = await fetch('http://localhost:8080/api/v1/note', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${localStorage.getItem("token")}`,
                 },
-                body: JSON.stringify({ title, content, settings }),
+                credentials: 'include',
+                body: JSON.stringify({ title, content, expirationType, expirationPeriod  }),
             });
 
             if (response.status === 201) {
                 const result = await response.json();
+                const jsonObject = JSON.parse(result);
                 console.log('Заметка создана:', result);
+
                 const navigate = useNavigate();
-                navigate(`/note/${result.note.url}`);
+                navigate(`/note/${jsonObject.url}`);
                 alert('Заметка успешно создана!');
             } else {
                 alert('Ошибка при создании заметки');

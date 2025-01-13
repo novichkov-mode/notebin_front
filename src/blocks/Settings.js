@@ -2,15 +2,15 @@ import React, {useState} from 'react';
 import '../css/App.css'
 
 function SettingsForm({ onChange }) {
-    const [deleteType, setDeleteType] = useState('default');
+    const [deleteType, setDeleteType] = useState('NEVER');
     const [time, setTime] = useState(null);
 
     const handleOptionChange = (value) => {
         setDeleteType(value);
-        if (value !== 'afterTime') {
+        if (value !== 'BURN_BY_PERIOD') {
             setTime(null);
         }
-        onChange({ deleteType: value, time });
+        onChange({ value: deleteType, time: time});
     };
 
     const handleTimeChange = (event) => {
@@ -29,8 +29,8 @@ function SettingsForm({ onChange }) {
                     type="radio"
                     name="option"
                     value="default"
-                    checked={deleteType === 'default'}
-                    onChange={() => handleOptionChange('default')}
+                    checked={deleteType === 'NEVER'}
+                    onChange={() => handleOptionChange('NEVER')}
                 />
                 Default
             </label>
@@ -39,8 +39,8 @@ function SettingsForm({ onChange }) {
                     type="radio"
                     name="option"
                     value="afterFirst"
-                    checked={deleteType === 'afterFirst'}
-                    onChange={() => handleOptionChange('afterFirst')}
+                    checked={deleteType === 'BURN_AFTER_READ'}
+                    onChange={() => handleOptionChange('BURN_AFTER_READ')}
                 />
                 One time look
             </label>
@@ -49,17 +49,17 @@ function SettingsForm({ onChange }) {
                     type="radio"
                     name="option"
                     value="afterTime"
-                    checked={deleteType === 'afterTime'}
-                    onChange={() => handleOptionChange('afterTime')}
+                    checked={deleteType === 'BURN_BY_PERIOD'}
+                    onChange={() => handleOptionChange('BURN_BY_PERIOD')}
                 />
                 After time
             </label>
-            {deleteType === 'afterTime' && (
+            {deleteType === 'BURN_BY_PERIOD' && (
                 <div id="timeInputContainer" style={{ marginTop: '5px' }}>
                     <label>
                         Enter time:
                         <input
-                            type="datetime-local"
+                            type="time"
                             id="timeInput"
                             name="timeInput"
                             onChange={handleTimeChange}
