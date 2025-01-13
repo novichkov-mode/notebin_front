@@ -1,0 +1,138 @@
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&display=swap');
+
+/* ------------------- Заголовок -------------------*/
+.title-container {
+  display: flex;
+  justify-content: center;
+}
+
+.title-container textarea {
+  width: 50%;
+  font-size: 24px;
+  resize: none;
+  border: none;
+  overflow: hidden;
+  outline: none;
+  text-align: left;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .title-container textarea {
+    width: 100%;
+  }
+}
+
+/* ---------------------------------------------------*/
+
+
+/* ------------------- Контейнер кнопок -------------------*/
+
+.button-container {
+  width: 25%;
+  align-content: start;
+  display: flex;
+  justify-content: center;
+}
+
+/* ------------------------------------------------------*/
+
+/* ----------------------- Заметка ----------------------*/
+
+.note-container {
+  width: 100%;
+  margin-top: 10px;
+  flex-direction: row;
+}
+
+.note-container textarea {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  resize: none;
+  overflow: hidden;
+  display: flex;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  min-height: 500px;
+  outline: none;
+}
+
+/* ------------------------------------------------------*/
+
+/* ------------------- Блок -------------------*/
+
+.inf-container {
+  width: 25%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: center;
+}
+
+/* --------------------------------------------*/
+
+/* ------------------- Кнопка -------------------*/
+
+.button {
+  /*width: ;*/
+  margin-top: 10px;
+  border: none;
+  color: black;
+  padding: 10px 20px;
+  text-align: center;
+  display: inline-block;
+  font-size: 16px;
+  font-family: "Comfortaa", serif;
+  cursor: pointer;
+}
+
+/* ------------------------------------------------*/
+
+/* ------------------- Настройки -------------------*/
+
+.settings-form {
+  width: 190px;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  font-size: 14px;
+  font-family: Comfortaa, sans-serif;
+  display: inline-flex;
+  flex-direction: column;
+}
+
+/* --------------------------------------------------*/
+
+/* ------------------- Заголовок -------------------*/
+
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background-color: #f8f9fa;
+}
+
+.logo {
+  text-decoration: none;
+  color: #000;
+  font-size: 30px;
+  font-weight: bold;
+  padding: 10px;
+}
+
+.search-bar {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.account-icon {
+  font-size: 40px;
+  color: gray;
+  cursor: pointer;
+}
+
+/* ----------------------------------------------------*/
