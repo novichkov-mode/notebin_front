@@ -5,54 +5,50 @@ import { AuthContext } from "./AuthContext";
 
 const AuthPage = () => {
     const [isLoginMode, setIsLoginMode] = useState(true);
-    const [username, setUsername] = useState("");
+    const [user, setUser] = useState("");
     const [password, setPassword] = useState("");
     const { login } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const toggleMode = () => {
         setIsLoginMode((prevMode) => !prevMode);
+        setUser("");
+        setPassword("");
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Подготовка данных для отправки
-        const payload = {
-            username,
-            password,
-        };
-
         try {
+            console.log({user, password})
             if (isLoginMode) {
-                const response = await fetch("/api/login", {
-                    method: "POST",
+                const response = await fetch('http://localhost:8081/api/v1/auth/login', {
+                    method: "PATCH",
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify(payload),
+                    body: JSON.stringify({ login: user, password: password }),
                 });
 
                 if (response.ok) {
-                    const data = await response.json();
-                    login(data.token);
+                    login(await response.text());
                     navigate('/create')
                 } else {
                     alert("Ошибка входа: проверьте логин и пароль.");
                 }
             } else {
                 // Логика регистрации
-                const response = await fetch("/api/register", {
+                const response = await fetch('http://localhost:8081/api/v1/user/register', {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify(payload),
+                    body: JSON.stringify({ login: user, password: password }),
                 });
 
                 if (response.ok) {
+                    toggleMode();
                     alert("Регистрация успешна! Теперь войдите.");
-                    setIsLoginMode(true);
                 } else {
                     alert("Ошибка регистрации: попробуйте ещё раз.");
                 }
@@ -62,12 +58,6 @@ const AuthPage = () => {
             alert("Произошла ошибка. Попробуйте ещё раз.");
         }
     };
-
-    // const handleSubmit = (e) => {
-    //     e.preventDefault();
-    //     login();
-    //     navigate('/create');
-    // };
 
     return (
         <div className="auth-page">
@@ -85,8 +75,8 @@ const AuthPage = () => {
                             <input
                                 type="text"
                                 id="username"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
+                                value={user}
+                                onChange={(e) => setUser(e.target.value)}
                                 placeholder="Введите логин"
                                 required
                             />

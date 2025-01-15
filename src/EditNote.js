@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 
 import "./css/App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -30,19 +30,29 @@ class EditNote extends React.Component {
         this.fetchNote(noteUrl);
     }
 
-    fetchNote = async (noteId) => {
+    headers = () => {
+        const head = {
+            'Content-Type': 'application/json',
+        };
+        const token = localStorage.getItem("token");
+        if (token) {
+            head.Authorization = `Bearer ${token}`;
+        }
+        return head;
+    };
+
+    fetchNote = async (url) => {
         try {
-            const token = localStorage.getItem("token");
-            const response = await fetch(`/api/notes/${noteId}`, {
+            const head = this.headers();
+
+            const response = await fetch(`http://localhost:8080/api/v1/note/${url}`, {
                 method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
+                headers: head,
+                credentials: 'include',
             });
 
             if (response.status === 200) {
-                const { note, canEdit } = await response.json();
+                const {note, canEdit} = await response.json();
                 this.setState({
                     note: note,
                     editedTitle: note.title,
@@ -75,7 +85,7 @@ class EditNote extends React.Component {
 
     // Сохранение изменений
     saveChanges = async () => {
-        const { note, editedTitle, editedNote, editedDeleteType, editedTime } = this.state;
+        const {note, editedTitle, editedNote, editedDeleteType, editedTime} = this.state;
 
         try {
             const response = await fetch(`/api/notes/${note.id}`, {
@@ -123,7 +133,7 @@ class EditNote extends React.Component {
     };
 
     deleteNote = async () => {
-        const { note } = this.state;
+        const {note} = this.state;
 
         try {
             const response = await fetch(`/api/notes/${note.id}`, {
@@ -148,25 +158,25 @@ class EditNote extends React.Component {
     };
 
     handleTitleChange = (event) => {
-        this.setState({ editedTitle: event.target.value });
+        this.setState({editedTitle: event.target.value});
     };
 
     handleNoteChange = (event) => {
-        this.setState({ editedNote: event.target.value });
+        this.setState({editedNote: event.target.value});
     };
 
     handleSettingsChange = (field, value) => {
-        this.setState({ [field]: value });
+        this.setState({[field]: value});
     };
 
     render() {
-        const { note, editedTitle, editedNote, editedDeleteType, editedTime, isEditing } = this.state;
+        const {note, editedTitle, editedNote, editedDeleteType, editedTime, isEditing} = this.state;
 
         return (
             <div>
-                <Header />
+                <Header/>
                 {note === null ? (
-                    <NotFound />
+                    <NotFound/>
                 ) : (
                     <div className="container">
                         <Title
@@ -185,37 +195,35 @@ class EditNote extends React.Component {
                                     />
                                 </div>
                                 <div className="col-md-3 inf-container">
-                                    {this.state.canEdit && (
-                                        !isEditing ? (
-                                            <div
-                                                id="editDelete"
-                                                style={{
-                                                    display: "flex",
-                                                    flexDirection: "column",
-                                                    justifyContent: "center",
-                                                }}
-                                            >
-                                                <Button text="Редактировать" onClick={this.startEditing} />
-                                                <Button text="Удалить" onClick={this.deleteNote} />
-                                            </div>
-                                        ) : (
-                                            <div
-                                                id="saveCancel"
-                                                style={{
-                                                    display: "flex",
-                                                    flexDirection: "column",
-                                                    justifyContent: "center",
-                                                }}
-                                            >
-                                                <Settings
-                                                    deleteType={editedDeleteType}
-                                                    time={editedTime}
-                                                    onChange={this.handleSettingsChange}
-                                                />
-                                                <Button text="Сохранить" onClick={this.saveChanges} />
-                                                <Button text="Отмена" onClick={this.cancelChanges} />
-                                            </div>
-                                        )
+                                    {!isEditing ? (
+                                        <div
+                                            id="editDelete"
+                                            style={{
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                justifyContent: "center",
+                                            }}
+                                        >
+                                            <Button text="Редактировать" onClick={this.startEditing}/>
+                                            <Button text="Удалить" onClick={this.deleteNote}/>
+                                        </div>
+                                    ) : (
+                                        <div
+                                            id="saveCancel"
+                                            style={{
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                justifyContent: "center",
+                                            }}
+                                        >
+                                            <Settings
+                                                deleteType={editedDeleteType}
+                                                time={editedTime}
+                                                onChange={this.handleSettingsChange}
+                                            />
+                                            <Button text="Сохранить" onClick={this.saveChanges}/>
+                                            <Button text="Отмена" onClick={this.cancelChanges}/>
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -230,7 +238,7 @@ class EditNote extends React.Component {
 // Обёртка для передачи useParams в классовый компонент
 const WithParams = (props) => {
     const params = useParams();
-    return <EditNote {...props} params={params} />;
+    return <EditNote {...props} params={params}/>;
 };
 
 export default WithParams;
