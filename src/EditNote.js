@@ -26,7 +26,7 @@ class EditNote extends React.Component {
     }
 
     componentDidMount() {
-        const noteUrl = this.props.params;
+        const noteUrl = this.props.params.noteUrl;
         this.fetchNote(noteUrl);
     }
 
@@ -43,23 +43,20 @@ class EditNote extends React.Component {
 
     fetchNote = async (url) => {
         try {
-            const head = this.headers();
-
             const response = await fetch(`http://localhost:8080/api/v1/note/${url}`, {
                 method: "GET",
-                headers: head,
+                headers: this.headers(),
                 credentials: 'include',
             });
 
             if (response.status === 200) {
-                const {note, canEdit} = await response.json();
+                const note = await response.json();
                 this.setState({
                     note: note,
                     editedTitle: note.title,
-                    editedNote: note.noteText,
-                    editedDeleteType: note.settings.deleteType || "default",
-                    editedTime: note.settings.time || "",
-                    canEdit: canEdit,
+                    editedNote: note.content,
+                    editedDeleteType: note.expirationType || "default",
+                    editedTime: note.expirationPeriod || "",
                 });
             } else {
                 this.setState({
@@ -189,7 +186,7 @@ class EditNote extends React.Component {
                                 <div className="col-md-3 inf-container"></div>
                                 <div className="col-md-6">
                                     <Note
-                                        value={isEditing ? editedNote : note.noteText}
+                                        value={isEditing ? editedNote : note.content}
                                         onChange={this.handleNoteChange}
                                         readOnly={!isEditing}
                                     />

@@ -17,12 +17,11 @@ const Account = () => {
 
     const fetchNotes = async () => {
         try {
-            const token = localStorage.getItem("token");
-            const response = await fetch("/api/notes", {
+            const response = await fetch("http://localhost:8080/api/v1/note/list/me", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
                 },
             });
 
@@ -44,15 +43,15 @@ const Account = () => {
         } else {
             fetchNotes();
         }
-    }, [navigate]); // Добавляем navigate как зависимость
+    }, [navigate]);
 
     const handleSearch = (query) => {
         setSearchQuery(query);
     };
 
-    if (!notes) {
-        return <div>Загрузка заметок...</div>;
-    }
+    // if (!notes) {
+    //     return <div>Загрузка заметок...</div>;
+    // }
 
     const filteredNotes = notes.filter(
         (note) =>
