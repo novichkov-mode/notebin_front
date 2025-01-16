@@ -7,6 +7,8 @@ import Settings from "./blocks/Settings";
 import Button from "./blocks/Button";
 import React from "react";
 import { useNavigate } from 'react-router-dom';
+import {convertTimeToDuration} from "./convertTimeToDuration";
+
 
 class CreateNoteClass extends React.Component {
     constructor(props) {
@@ -28,6 +30,7 @@ class CreateNoteClass extends React.Component {
     };
 
     handleSettingsChange = (event) => {
+        console.log(event.value, event.time);
         this.setState({ expirationType: event.value, expirationPeriod: event.time });
     };
 
@@ -44,18 +47,23 @@ class CreateNoteClass extends React.Component {
 
     createNote = async () => {
         const { title, content, expirationType, expirationPeriod } = this.state;
-        const head = this.headers();
+        console.log(this.state);
+
+        if (expirationType === 'BURN_BY_PERIOD' && !expirationPeriod) {
+            alert('Пожалуйста, укажите время для Burn by period.');
+            return;
+        }
 
         try {
             const response = await fetch('http://localhost:8080/api/v1/note', {
                 method: 'POST',
-                headers: head,
+                headers: this.headers(),
                 credentials: 'include',
                 body: JSON.stringify({
-                    title,
-                    content,
-                    expirationType,
-                    expirationPeriod,
+                    title: title,
+                    content: content,
+                    expirationType: expirationType,
+                    expirationPeriod: expirationType === 'BURN_BY_PERIOD' ? convertTimeToDuration(expirationPeriod) : null,
                 }),
             });
 
@@ -86,7 +94,7 @@ class CreateNoteClass extends React.Component {
                             <Note value={this.state.content} onChange={this.handleContentChange} readOnly={false} />
                         </div>
                         <div className="col-md-3 inf-container">
-                            <Settings onChange={this.handleSettingsChange} />
+                            <Settings deleteType="NEVER" onChange={this.handleSettingsChange} />
                             <Button text="Создать" onClick={this.createNote} />
                         </div>
                     </div>

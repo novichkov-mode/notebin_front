@@ -24,9 +24,6 @@ class Header extends React.Component {
     translateLink = (url) => {
         const { navigate } = this.props;
         navigate('/note/' + url);
-        console.log(url);
-        // TODO сделать чтобы работало без перезагрузки
-        //window.location.reload();
     };
 
     handleLogout = () => {

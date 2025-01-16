@@ -1,22 +1,26 @@
-import React, {useState} from 'react';
-import '../css/App.css'
+import React, { useEffect, useState } from 'react';
+import '../css/App.css';
 
-function SettingsForm({ onChange }) {
-    const [deleteType, setDeleteType] = useState('NEVER');
-    const [time, setTime] = useState(null);
+function SettingsForm({ deleteType: initialDeleteType, time: initialTime, onChange }) {
+    const [deleteType, setDeleteType] = useState(initialDeleteType || 'NEVER');
+    const [time, setTime] = useState(initialTime || null);
+
+    // Обновляем локальное состояние при изменении пропсов
+    useEffect(() => {
+        setDeleteType(initialDeleteType || 'NEVER');
+        setTime(initialTime || null);
+    }, [initialDeleteType, initialTime]);
 
     const handleOptionChange = (value) => {
-        setDeleteType(value);
-        if (value !== 'BURN_BY_PERIOD') {
-            setTime(null);
-        }
-        onChange({ value: deleteType, time: time});
+        setDeleteType(value); // Обновляем локальное состояние
+        const newTime = value !== 'BURN_BY_PERIOD' ? null : time; // Устанавливаем корректное время
+        onChange({ value, time: newTime }); // Передаем обновленное состояние
     };
 
     const handleTimeChange = (event) => {
         const selectedTime = event.target.value;
         setTime(selectedTime);
-        onChange({ deleteType, time: selectedTime });
+        onChange({ value: deleteType, time: selectedTime }); // Передаем преобразованное время
     };
 
     return (
@@ -28,31 +32,31 @@ function SettingsForm({ onChange }) {
                 <input
                     type="radio"
                     name="option"
-                    value="default"
+                    value="NEVER"
                     checked={deleteType === 'NEVER'}
                     onChange={() => handleOptionChange('NEVER')}
                 />
-                Default
+                Never
             </label>
             <label>
                 <input
                     type="radio"
                     name="option"
-                    value="afterFirst"
+                    value="BURN_AFTER_READ"
                     checked={deleteType === 'BURN_AFTER_READ'}
                     onChange={() => handleOptionChange('BURN_AFTER_READ')}
                 />
-                One time look
+                Burn after read
             </label>
             <label>
                 <input
                     type="radio"
                     name="option"
-                    value="afterTime"
+                    value="BURN_BY_PERIOD"
                     checked={deleteType === 'BURN_BY_PERIOD'}
                     onChange={() => handleOptionChange('BURN_BY_PERIOD')}
                 />
-                After time
+                Burn by period
             </label>
             {deleteType === 'BURN_BY_PERIOD' && (
                 <div id="timeInputContainer" style={{ marginTop: '5px' }}>
@@ -62,6 +66,7 @@ function SettingsForm({ onChange }) {
                             type="time"
                             id="timeInput"
                             name="timeInput"
+                            value={time || ''}
                             onChange={handleTimeChange}
                         />
                     </label>
@@ -72,4 +77,3 @@ function SettingsForm({ onChange }) {
 }
 
 export default SettingsForm;
-

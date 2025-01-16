@@ -9,6 +9,9 @@ import Note from "./blocks/Note";
 import Settings from "./blocks/Settings";
 import Button from "./blocks/Button";
 import NotFound from "./blocks/NotFound";
+import {convertDurationToTime} from "./convertDurationToTime";
+import {convertTimeToDuration} from "./convertTimeToDuration";
+
 
 
 class EditNote extends React.Component {
@@ -20,15 +23,24 @@ class EditNote extends React.Component {
             editedNote: "",
             editedDeleteType: "",
             editedTime: "",
-            canEdit: false,
             isEditing: false,
         };
     }
 
     componentDidMount() {
         const noteUrl = this.props.params.noteUrl;
-        this.fetchNote(noteUrl);
+        this.fetchNote(noteUrl); // Первый запрос при монтировании
     }
+
+    componentDidUpdate(prevProps) {
+        const prevNoteUrl = prevProps?.params?.noteUrl;
+        const currentNoteUrl = this.props.params.noteUrl;
+
+        if (prevNoteUrl !== currentNoteUrl) {
+            this.fetchNote(currentNoteUrl); // Повторный запрос при изменении URL
+        }
+    }
+
 
     headers = () => {
         const head = {
@@ -51,12 +63,13 @@ class EditNote extends React.Component {
 
             if (response.status === 200) {
                 const note = await response.json();
+                console.log(note.expirationType, note.expirationPeriod)
                 this.setState({
                     note: note,
                     editedTitle: note.title,
                     editedNote: note.content,
-                    editedDeleteType: note.expirationType || "default",
-                    editedTime: note.expirationPeriod || "",
+                    editedDeleteType: note.expirationType,
+                    editedTime: note.expirationType === 'BURN_BY_PERIOD' ? convertDurationToTime(note.expirationPeriod) : null,
                 });
             } else {
                 this.setState({
@@ -82,22 +95,22 @@ class EditNote extends React.Component {
 
     // Сохранение изменений
     saveChanges = async () => {
-        const {note, editedTitle, editedNote, editedDeleteType, editedTime} = this.state;
+        console.log(this.state.editedDeleteType, this.state.editedTime);
+
+        if (this.state.editedDeleteType === 'BURN_BY_PERIOD' && !this.state.editedTime) {
+            alert('Пожалуйста, укажите время для Burn by period.');
+            return;
+        }
 
         try {
-            const response = await fetch(`/api/notes/${note.id}`, {
+            const response = await fetch(`http://localhost:8080/api/v1/note/${this.state.note.url}`, {
                 method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: this.headers(),
                 body: JSON.stringify({
-                    ...note, // Передаём существующие поля заметки
-                    title: editedTitle,
-                    noteText: editedNote,
-                    settings: {
-                        deleteType: editedDeleteType,
-                        time: editedDeleteType === "afterTime" ? editedTime : null,
-                    },
+                    title: this.state.editedTitle,
+                    content: this.state.editedNote,
+                    expirationType: this.state.editedDeleteType,
+                    expirationPeriod: this.state.editedDeleteType === "BURN_BY_PERIOD" ? convertTimeToDuration(this.state.editedTime) : null,
                 }),
             });
 
@@ -108,6 +121,13 @@ class EditNote extends React.Component {
                     isEditing: false,
                 });
                 alert("Изменения успешно сохранены");
+            } else if (response.status === 400) {
+                alert('Недопустимые символы в заголовке. Используйте только английские буквы и цифры.');
+                this.cancelChanges();
+            }
+            else if (response.status === 403) {
+                alert('Недостаточно прав на редактирование заметки');
+                this.cancelChanges();
             } else {
                 const errorData = await response.json();
                 alert(`Ошибка при сохранении изменений: ${errorData.message}`);
@@ -122,28 +142,27 @@ class EditNote extends React.Component {
     cancelChanges = () => {
         this.setState({
             editedTitle: this.state.note.title,
-            editedNote: this.state.note.noteText,
-            editedDeleteType: this.state.note.settings.deleteType || "default",
-            editedTime: this.state.note.settings.time || "",
+            editedNote: this.state.note.content,
+            editedDeleteType: this.state.note.expirationType || "NEVER",
+            editedTime: this.state.note.expirationPeriod || "",
             isEditing: false,
         });
     };
 
     deleteNote = async () => {
-        const {note} = this.state;
-
         try {
-            const response = await fetch(`/api/notes/${note.id}`, {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+            const response = await fetch(`http://localhost:8080/api/v1/note/${this.state.note.url}`, {
+                method: "PATCH",
+                headers: this.headers(),
             });
 
-            if (response.status === 200) {
+            if (response.status === 204) {
                 const navigate = useNavigate();
                 alert("Заметка успешно удалена");
                 navigate("/create");
+            } else if (response.status === 403) {
+                alert('Недостаточно прав на удаление заметки');
+                this.cancelChanges();
             } else {
                 const errorData = await response.json();
                 alert(`Ошибка при удалении заметки: ${errorData.message}`);
@@ -162,8 +181,11 @@ class EditNote extends React.Component {
         this.setState({editedNote: event.target.value});
     };
 
-    handleSettingsChange = (field, value) => {
-        this.setState({[field]: value});
+    handleSettingsChange = (event) => {
+        this.setState({
+                editedDeleteType: event.value,
+                editedTime: event.time,
+            });
     };
 
     render() {

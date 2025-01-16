@@ -20,7 +20,6 @@ const AuthPage = () => {
         e.preventDefault();
 
         try {
-            console.log({user, password})
             if (isLoginMode) {
                 const response = await fetch('http://localhost:8081/api/v1/auth/login', {
                     method: "PATCH",
@@ -49,6 +48,8 @@ const AuthPage = () => {
                 if (response.ok) {
                     toggleMode();
                     alert("Регистрация успешна! Теперь войдите.");
+                } else if (response.status === 409) {
+                    alert("Ошибка регистрации: пользователь с таким логином уже есть.")
                 } else {
                     alert("Ошибка регистрации: попробуйте ещё раз.");
                 }

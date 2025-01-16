@@ -5,6 +5,8 @@ import Notes from './blocks/Notes';
 import Header from "./blocks/Header";
 import SearchBar from './blocks/SearchBar';
 import { useNavigate } from "react-router-dom";
+import {formatDate} from "./formatDate";
+
 
 const Account = () => {
     const [notes, setNotes] = useState(null);
@@ -25,9 +27,19 @@ const Account = () => {
                 },
             });
 
-            if (response.ok) {
-                const notes = await response.json();
-                setNotes(notes);
+            if (response.status === 200) {
+                const data = await response.json();
+                setNotes(data.page.content); // Сохраняем список заметок
+                // const analytics = await fetch("http://localhost:8080/api/v1/analytics/view-notes", {
+                //     method: "GET",
+                //     headers: {
+                //         "Content-Type": "application/json",
+                //         Authorization: `Bearer ${localStorage.getItem("token")}`,
+                //     },
+                //     body: JSON.stringify({
+                //         urls: //,
+                //     }),
+                // });
             } else {
                 console.error(`Ошибка загрузки заметок: ${response.statusText}`);
             }
@@ -49,23 +61,34 @@ const Account = () => {
         setSearchQuery(query);
     };
 
-    // if (!notes) {
-    //     return <div>Загрузка заметок...</div>;
-    // }
+    if (!notes) {
+        return (
+            <div>
+                <Header />
+                <div>Загрузка заметок...</div>
+            </div>
+        );
+    }
 
-    const filteredNotes = notes.filter(
-        (note) =>
-            note.createAt.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            note.noteText.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    // Преобразование и фильтрация заметок
+    const filteredNotes = notes.filter((note) => {
+        const createdAt = formatDate(note.createdAt)?.toLowerCase() || ""; // Преобразуем дату в строку
+        const title = note.title?.toLowerCase() || ""; // Проверяем наличие заголовка
+        const content = note.content?.toLowerCase() || ""; // Проверяем наличие контента
+
+        return (
+            createdAt.includes(searchQuery.toLowerCase()) || // Поиск по дате
+            title.includes(searchQuery.toLowerCase()) ||    // Поиск по заголовку
+            content.includes(searchQuery.toLowerCase())     // Поиск по содержимому
+        );
+    });
 
     return (
         <div>
             <Header />
             <div style={{ display: "flex", justifyContent: "center" }}>
                 <div style={{ width: '30%' }}>
-                    <SearchBar onSearch={handleSearch} doSearch={() => {}} text="Поиск" />
+                    <SearchBar onSearch={handleSearch} doSearch={() => { }} text="Поиск" />
                 </div>
             </div>
             <Notes notes={filteredNotes} />
